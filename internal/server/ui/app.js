@@ -138,7 +138,64 @@ async function loadFeed() {
 }
 
 /* pages filled in later */
-function renderLive() {}
+let liveFilter = { sev: 0, sensor: "" };
+
+function logRow(e, fresh) {
+  const tr = document.createElement("tr");
+  tr.className = "go" + (fresh ? " fresh" : "");
+  tr.dataset.remote = e.remote;
+  tr.innerHTML = `<td class="t">${when(e.time)}</td><td><span class="sens sev-${e.severity}">${esc(e.sensor)}</span></td>` +
+    `<td class="ip">${esc(e.remote)}</td><td>${esc(e.summary)}</td><td>${tagChips(e.tags)}</td>`;
+  return tr;
+}
+
+function matchesLive(e) {
+  return e.severity >= liveFilter.sev && (!liveFilter.sensor || e.sensor === liveFilter.sensor);
+}
+
+async function renderLive() {
+  const q = `/api/v1/events?limit=200&severity=${liveFilter.sev}` + (liveFilter.sensor ? "&sensor=" + liveFilter.sensor : "");
+  const events = await api(q);
+  const body = $("log");
+  body.replaceChildren(...events.map((e) => logRow(e, false)));
+  if (!events.length) body.innerHTML = `<tr><td colspan="5" class="empty">No events match these filters yet.</td></tr>`;
+}
+
+// One stream feeds every page that shows live activity.
+let staleTimer = null;
+function onLive(e) {
+  if (!$("page-overview").hidden) {
+    const feed = $("feed");
+    feed.prepend(feedItem(e, !reduced));
+    while (feed.children.length > 14) feed.lastChild.remove();
+  }
+  if (!$("page-live").hidden && matchesLive(e)) {
+    const body = $("log");
+    if (body.querySelector(".empty")) body.replaceChildren();
+    body.prepend(logRow(e, !reduced));
+    while (body.children.length > 200) body.lastChild.remove();
+  }
+  const door = document.querySelector(`.door[data-sensor="${e.sensor}"]`);
+  if (door && !reduced) { door.classList.remove("knock"); void door.offsetWidth; door.classList.add("knock"); }
+  clearTimeout(staleTimer);
+  staleTimer = setTimeout(async () => {
+    summary = await api("/api/v1/summary").catch(() => summary);
+    if (!$("page-overview").hidden) renderOverviewNumbers();
+  }, 4000);
+}
+
+function renderOverviewNumbers() {
+  const feed = $("feed").cloneNode(true);
+  renderOverview();
+  $("feed").replaceWith(feed);
+}
+
+function openStream() {
+  const es = new EventSource(withToken("/api/v1/stream"));
+  es.onmessage = (m) => { try { onLive(JSON.parse(m.data)); } catch { /* ignore a malformed frame */ } };
+  es.onerror = () => { $("watch").classList.remove("on"); };
+  es.onopen = () => { $("watch").classList.add("on"); };
+}
 function renderSources() {}
 function renderSource() {}
 function renderCredentials() {}
@@ -148,6 +205,17 @@ function renderSensors() {}
 
 async function init() {
   window.addEventListener("hashchange", route);
+  document.querySelectorAll("#sev-seg button").forEach((b) => b.addEventListener("click", () => {
+    liveFilter.sev = Number(b.dataset.sev);
+    document.querySelectorAll("#sev-seg button").forEach((x) => x.classList.toggle("on", x === b));
+    renderLive();
+  }));
+  $("sensor-filter").addEventListener("change", (e) => { liveFilter.sensor = e.target.value; renderLive(); });
+  const openSource = (ev) => {
+    const tr = ev.target.closest("tr[data-remote]");
+    if (tr && (ev.type === "click" || ev.key === "Enter")) location.hash = "#/source/" + encodeURIComponent(tr.dataset.remote);
+  };
+  for (const id of ["log", "sources"]) { $(id).addEventListener("click", openSource); $(id).addEventListener("keydown", openSource); }
   try {
     const [st, rules] = await Promise.all([api("/api/v1/status"), api("/api/v1/rules")]);
     rules.forEach((r) => { rulesBySeverity[r.tag] = r.severity; });
@@ -161,6 +229,7 @@ async function init() {
     $("watch").querySelector("span").textContent = "Sensors unreachable";
   }
   await refresh();
+  openStream();
 }
 
 init();
