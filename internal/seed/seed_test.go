@@ -29,6 +29,9 @@ func TestEventsDeterministicAndDocumented(t *testing.T) {
 		if !ok {
 			t.Errorf("%s is outside the RFC 5737 documentation ranges", addr)
 		}
+		if i > 0 && a[i].Time.Before(a[i-1].Time) {
+			t.Fatal("events are not in time order")
+		}
 		if a[i].Time.After(now) || now.Sub(a[i].Time) > 24*time.Hour {
 			t.Errorf("event at %v is outside the last day", a[i].Time)
 		}

@@ -6,6 +6,7 @@ package seed
 
 import (
 	"math/rand/v2"
+	"sort"
 	"time"
 
 	"github.com/cansarihan/lure/internal/event"
@@ -116,6 +117,9 @@ func Events(now time.Time, count int) []event.Event {
 		e.Summary = describe(e)
 		out = append(out, e)
 	}
+	// Real events reach the recorder in the order they happen; keep that so the
+	// newest-first views read the same way they would live.
+	sort.SliceStable(out, func(i, j int) bool { return out[i].Time.Before(out[j].Time) })
 	return out
 }
 
