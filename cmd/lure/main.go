@@ -33,6 +33,10 @@ func run() error {
 	switch os.Args[1] {
 	case "run":
 		return runSensors(args)
+	case "report":
+		return runReport(args)
+	case "rules":
+		return runRules(args)
 	case "version":
 		fmt.Printf("lure %s (commit %s, built %s)\n", version, commit, date)
 		return nil
