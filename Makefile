@@ -37,8 +37,7 @@ tidy:
 
 
 run: build
-	@test -d .work/relay || ./bin/$(BINARY) demo .work/relay
-	./bin/$(BINARY) serve -repo .work/relay
+	./bin/$(BINARY) run -seed 900 -panel 127.0.0.1:9000
 
 demo:
 	docker compose -f deploy/docker-compose.yml up --build -d

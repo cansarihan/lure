@@ -1,0 +1,23 @@
+# Demo stack: the four decoys on local ports, preloaded with a day of synthetic
+# events, and the panel at http://127.0.0.1:18210. Every port is bound to
+# loopback so the demo is not exposed to the network.
+services:
+  lure:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: lure:demo
+    command: ["run", "-seed", "900",
+              "-sensor", "http=:8080", "-sensor", "ssh=:2222", "-sensor", "telnet=:2323", "-sensor", "raw:redis=:6379",
+              "-panel", ":9000", "-journal", "/data/events.jsonl"]
+    ports:
+      - "127.0.0.1:18210:9000"
+      - "127.0.0.1:18080:8080"
+      - "127.0.0.1:12222:2222"
+      - "127.0.0.1:12323:2323"
+      - "127.0.0.1:16379:6379"
+    volumes:
+      - lure-data:/data
+    restart: unless-stopped
+volumes:
+  lure-data:
