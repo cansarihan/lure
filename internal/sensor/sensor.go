@@ -57,9 +57,8 @@ func acceptLoop(ctx context.Context, ln net.Listener, handle func(net.Conn)) err
 
 // base fills the fields every event shares.
 func base(sensor string, conn net.Conn, kind event.Kind) event.Event {
-	host, port := split(conn.RemoteAddr())
+	host, _ := split(conn.RemoteAddr())
 	_, local := split(conn.LocalAddr())
-	_ = port
 	return event.Event{Sensor: sensor, Port: local, Remote: host, Kind: kind, Fields: map[string]string{}}
 }
 
