@@ -262,10 +262,44 @@ function drawStrip(events) {
     svg.append(el("line", { x1: x(e.time), x2: x(e.time), y1: mid - h, y2: mid + 4, stroke: color[e.severity] || color[1], "stroke-width": 2, "stroke-linecap": "round", opacity: 0.85 }));
   }
 }
-function renderCredentials() {}
-function renderPaths() {}
-function renderBehaviours() {}
-function renderSensors() {}
+function renderCredentials() {
+  rankList($("pairs"), summary.pairs, true);
+  rankList($("users"), summary.usernames, true);
+  rankList($("passwords"), summary.passwords, true);
+}
+
+function renderPaths() {
+  rankList($("paths"), summary.paths, true);
+  rankList($("clients"), summary.clients, true);
+}
+
+function renderBehaviours() {
+  const counts = Object.fromEntries(summary.tags.map((t) => [t.value, t.n]));
+  $("rules").innerHTML = (window.lureRules || []).map((r) => `
+    <article class="rule s${r.severity}"><h3>${esc(r.tag)}</h3><p>${esc(r.description)}</p>
+    <span class="count" title="matches today">${(counts[r.tag] || 0).toLocaleString(LOCALE)}</span></article>`).join("");
+}
+
+const sensorWords = {
+  http: "A web server with a stock admin login page. Records every request and any login form posted to it.",
+  ssh: "An OpenSSH version banner. Records the software the client announces, then hangs up.",
+  telnet: "A device login prompt. Records each username and password tried, and refuses them all.",
+  raw: "A port dressed as another service. Records the first bytes a client sends.",
+};
+
+function renderSensors() {
+  const listeners = (window.lureStatus && window.lureStatus.listeners) || [];
+  const counts = summary.by_sensor || {};
+  const names = listeners.length ? listeners.map((l) => ({ name: l.spec.sensor, addr: l.addr, label: l.spec.label }))
+    : Object.keys(counts).map((n) => ({ name: n, addr: "not running here" }));
+  $("doors").innerHTML = names.length ? names.map((d) => `
+    <article class="door" data-sensor="${esc(d.name)}">
+      <h3>${esc(d.name)}${d.label ? ` <span class="lbl">as ${esc(d.label)}</span>` : ""}</h3>
+      <span class="addr">${esc(d.addr)}</span>
+      <p class="lbl">${esc(sensorWords[d.name] || "")}</p>
+      <span class="big">${(counts[d.name] || 0).toLocaleString(LOCALE)}</span><span class="lbl">events in 24 hours</span>
+    </article>`).join("") : `<p class="empty">No sensors are running.</p>`;
+}
 
 async function init() {
   window.addEventListener("hashchange", route);
