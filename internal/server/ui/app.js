@@ -196,8 +196,72 @@ function openStream() {
   es.onerror = () => { $("watch").classList.remove("on"); };
   es.onopen = () => { $("watch").classList.add("on"); };
 }
-function renderSources() {}
-function renderSource() {}
+function topTags(tagCounts, n) {
+  return Object.entries(tagCounts || {}).sort((a, b) => b[1] - a[1]).slice(0, n).map(([t]) => t);
+}
+
+function span(first, last) {
+  const mins = Math.round((new Date(last) - new Date(first)) / 60000);
+  if (mins < 1) return "a single moment";
+  if (mins < 60) return plural(mins, "minute", "minutes");
+  return plural(Math.round(mins / 60), "hour", "hours");
+}
+
+function renderSources() {
+  const rows = summary.sources;
+  $("sources").innerHTML = rows.length ? rows.map((x) => `
+    <tr class="go" tabindex="0" data-remote="${esc(x.remote)}">
+      <td class="ip">${esc(x.remote)}</td><td>${x.events}</td><td>${x.logins || ""}</td>
+      <td>${x.sensors.map((n) => `<span class="sens">${esc(n)}</span>`).join(" ")}</td>
+      <td class="t">${span(x.first, x.last)}</td><td>${tagChips(topTags(x.tags, 3))}</td>
+    </tr>`).join("") : `<tr><td colspan="6" class="empty">No source has reached a sensor yet.</td></tr>`;
+}
+
+async function renderSource(remote) {
+  $("h-source").textContent = remote;
+  $("source-sub").textContent = "Loading this source";
+  let data;
+  try {
+    data = await api("/api/v1/sources/" + encodeURIComponent(remote));
+  } catch (err) {
+    $("source-sub").textContent = err.message + ". It may have aged out of memory.";
+    ["source-tags", "source-pairs", "source-events"].forEach((id) => { $(id).innerHTML = ""; });
+    $("strip").replaceChildren();
+    return;
+  }
+  const src = data.source;
+  $("source-sub").textContent = `${plural(src.events, "event", "events")} on ${src.sensors.join(", ")} between ${when(src.first)} and ${when(src.last)}.`;
+  drawStrip(data.events);
+  $("source-tags").innerHTML = Object.entries(src.tags).sort((a, b) => b[1] - a[1])
+    .map(([t, n]) => `<li><span class="tag s${rulesBySeverity[t] || 1}">${esc(t)}</span><b>${n}</b></li>`).join("") || `<li>No recognised behaviour.</li>`;
+  rankList($("source-pairs"), data.summary.pairs.slice(0, 8));
+  $("source-events").innerHTML = data.events.slice(0, 120).map((e) =>
+    `<tr><td class="t">${when(e.time)}</td><td><span class="sens sev-${e.severity}">${esc(e.sensor)}</span></td><td>${esc(e.summary)}</td><td>${tagChips(e.tags)}</td></tr>`).join("");
+}
+
+function drawStrip(events) {
+  const svg = $("strip");
+  svg.replaceChildren();
+  const W = svg.clientWidth || 900, H = 90, pad = 10, mid = 42;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const end = Date.now(), start = end - 24 * 3600e3;
+  const x = (t) => pad + ((new Date(t) - start) / (end - start)) * (W - pad * 2);
+  svg.append(el("line", { x1: pad, x2: W - pad, y1: mid, y2: mid, stroke: "#4a4468", "stroke-width": 2 }));
+  for (let h = 0; h <= 24; h += 6) {
+    const t = new Date(start + h * 3600e3);
+    const tx = pad + (h / 24) * (W - pad * 2);
+    svg.append(el("line", { x1: tx, x2: tx, y1: mid + 14, y2: mid + 20, stroke: "#4a4468" }));
+    const label = el("text", { x: tx, y: H - 6, "text-anchor": h === 0 ? "start" : h === 24 ? "end" : "middle", "font-size": 11, fill: "#a9a2c4" });
+    label.textContent = h === 24 ? "now" : clock(t.toISOString());
+    svg.append(label);
+  }
+  const color = { 1: "#6fd3c7", 2: "#ffb547", 3: "#ff6b6b" };
+  for (const e of events) {
+    if (new Date(e.time) < start) continue;
+    const h = 8 + e.severity * 7;
+    svg.append(el("line", { x1: x(e.time), x2: x(e.time), y1: mid - h, y2: mid + 4, stroke: color[e.severity] || color[1], "stroke-width": 2, "stroke-linecap": "round", opacity: 0.85 }));
+  }
+}
 function renderCredentials() {}
 function renderPaths() {}
 function renderBehaviours() {}
@@ -205,6 +269,7 @@ function renderSensors() {}
 
 async function init() {
   window.addEventListener("hashchange", route);
+  window.addEventListener("resize", () => { if (!$("page-source").hidden) route(); });
   document.querySelectorAll("#sev-seg button").forEach((b) => b.addEventListener("click", () => {
     liveFilter.sev = Number(b.dataset.sev);
     document.querySelectorAll("#sev-seg button").forEach((x) => x.classList.toggle("on", x === b));
