@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 170" width="760" height="170" fill="none">
+  <g transform="translate(92,85)">
+    <circle r="62" stroke="#C9C3DD" stroke-width="3"/>
+    <path d="M0 -62 A62 62 0 0 1 53.7 -31 L0 0 Z" fill="#FFB547"/>
+    <path d="M53.7 -31 A62 62 0 0 1 62 0 L0 0 Z" fill="#FF6B6B" opacity="0.9"/>
+    <path d="M-62 0 A62 62 0 0 1 -53.7 -31 L0 0 Z" fill="#6FD3C7" opacity="0.8"/>
+    <circle r="24" fill="#F4F2FA"/>
+    <circle r="5" fill="#24213A"/>
+  </g>
+  <text x="186" y="98" font-family="'DIN Alternate', 'Avenir Next Condensed', 'Arial Narrow', sans-serif" font-size="76" font-weight="600" fill="#24213A">Lure</text>
+  <text x="190" y="128" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" fill="#5D5878">decoy services that record who comes knocking</text>
+</svg>
