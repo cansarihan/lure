@@ -119,8 +119,8 @@ select { background: var(--haze); color: var(--moon); border: 1px solid #3d3860;
 .rule.s2 .count { color: var(--lantern); }
 .rule.s3 .count { color: var(--coral); }
 .doors { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
-.door { position: relative; background: linear-gradient(180deg, var(--haze-2), var(--haze)); border: 1px solid var(--edge); border-radius: 16px 16px 6px 6px; padding: 20px; min-height: 200px; display: flex; flex-direction: column; }
-.door::after { content: ""; position: absolute; right: 18px; top: 50%; width: 8px; height: 8px; border-radius: 50%; background: var(--lantern); opacity: .7; }
+.door { position: relative; background: linear-gradient(180deg, var(--haze-2), var(--haze)); border: 1px solid var(--edge); border-radius: 16px 16px 6px 6px; padding: 20px 42px 20px 20px; min-height: 200px; display: flex; flex-direction: column; }
+.door::after { content: ""; position: absolute; right: 16px; top: 58%; width: 8px; height: 8px; border-radius: 50%; background: var(--lantern); opacity: .7; }
 .door.knock { animation: knock .5s ease-out; }
 @keyframes knock { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 50% { transform: translateX(3px); } 75% { transform: translateX(-2px); } }
 .door h3 { margin: 0; font: 600 24px var(--display); }

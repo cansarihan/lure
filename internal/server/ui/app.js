@@ -80,7 +80,7 @@ function renderOverview() {
 function drawDial(hourly) {
   const svg = $("dial");
   svg.replaceChildren();
-  const cx = 210, cy = 210, inner = 74, span = 112;
+  const cx = 210, cy = 210, inner = 62, span = 100;
   const max = Math.max(1, ...hourly);
   const nowHour = new Date().getHours();
   const total = hourly.reduce((a, b) => a + b, 0);
@@ -104,7 +104,7 @@ function drawDial(hourly) {
     if (hour === nowHour) svg.append(el("path", { d: wedge(hour, inner - 2, inner + span + 2), fill: "none", stroke: "#e9e4f5", "stroke-width": 1.5 }));
   });
   for (let h = 0; h < 24; h += 3) {
-    const a = ((h / 24) * 360 - 90) * Math.PI / 180, r = inner + span + 22;
+    const a = ((h / 24) * 360 - 90) * Math.PI / 180, r = inner + span + 20;
     const t = el("text", { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) + 4, "text-anchor": "middle", "font-size": 13, fill: "#a9a2c4", "font-family": "DIN Alternate, Avenir Next Condensed, sans-serif" });
     t.textContent = String(h).padStart(2, "0"); svg.append(t);
   }
