@@ -1,1 +1,118 @@
-<!doctype html><title>Lure</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lure</title>
+  <link rel="icon" href="favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <aside class="rail">
+    <a class="brand" href="#/overview" aria-label="Lure overview">
+      <svg viewBox="0 0 64 64" width="32" height="32" aria-hidden="true"><circle cx="32" cy="34" r="19" fill="none" stroke="#4A4468" stroke-width="3"/><path d="M32 15a19 19 0 0 1 16.5 9.5L32 34Z" fill="#FFB547"/><circle cx="32" cy="34" r="3.5" fill="#E9E4F5"/></svg>
+      <span>Lure</span>
+    </a>
+    <p class="watch" id="watch"><i class="pulse"></i><span>Connecting to the sensors</span></p>
+    <nav aria-label="Sections">
+      <a href="#/overview" data-page="overview"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7"/><path d="M10 3v7l4 3"/></svg>Overview</a>
+      <a href="#/live" data-page="live"><svg viewBox="0 0 20 20"><path d="M3 10h3l2-5 4 10 2-5h3"/></svg>Live feed</a>
+      <a href="#/sources" data-page="sources"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="3"/><path d="M4 17c1-3.5 3.5-5 6-5s5 1.5 6 5"/></svg>Sources</a>
+      <a href="#/credentials" data-page="credentials"><svg viewBox="0 0 20 20"><circle cx="7" cy="10" r="3.5"/><path d="M10.5 10H17M14.5 10v3M17 10v2"/></svg>Credentials</a>
+      <a href="#/paths" data-page="paths"><svg viewBox="0 0 20 20"><path d="M4 16 9 4M11 16l5-12"/></svg>Paths and clients</a>
+      <a href="#/behaviours" data-page="behaviours"><svg viewBox="0 0 20 20"><path d="M10 3 3 16h14Z"/><path d="M10 8v4M10 14v.01"/></svg>Behaviours</a>
+      <a href="#/sensors" data-page="sensors"><svg viewBox="0 0 20 20"><rect x="4" y="3" width="12" height="14" rx="1.5"/><circle cx="13" cy="10" r=".8"/></svg>Sensors</a>
+      <a href="#/about" data-page="about"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7"/><path d="M10 9v5M10 6.5v.01"/></svg>About</a>
+    </nav>
+    <p class="build" id="build"></p>
+  </aside>
+
+  <main id="main" tabindex="-1">
+    <section class="page" id="page-overview" aria-labelledby="h-overview">
+      <header class="lede">
+        <h1 id="h-overview">The last 24 hours</h1>
+        <p class="sub" id="lede-sub">Reading the record.</p>
+      </header>
+      <div class="hero">
+        <figure class="dial-card">
+          <svg id="dial" viewBox="0 0 420 420" role="img" aria-label="Events per hour over the last day"></svg>
+          <figcaption id="dial-caption"></figcaption>
+        </figure>
+        <section class="feed-card" aria-labelledby="h-feed">
+          <h2 id="h-feed">As it happens</h2>
+          <ol id="feed" class="feed" aria-live="polite"></ol>
+        </section>
+      </div>
+      <div class="trio">
+        <section class="card"><h2>Busiest sources</h2><ol id="top-sources" class="rank"></ol></section>
+        <section class="card"><h2>Credentials tried most</h2><ol id="top-pairs" class="rank"></ol></section>
+        <section class="card"><h2>What they were after</h2><ol id="top-tags" class="rank"></ol></section>
+      </div>
+    </section>
+
+    <section class="page" id="page-live" aria-labelledby="h-live" hidden>
+      <header class="lede"><h1 id="h-live">Live feed</h1><p class="sub">New events appear at the top as the sensors record them.</p></header>
+      <div class="filters">
+        <div class="seg" role="group" aria-label="Severity" id="sev-seg">
+          <button data-sev="0" class="on">Everything</button><button data-sev="2">Notices and alerts</button><button data-sev="3">Alerts only</button>
+        </div>
+        <select id="sensor-filter" aria-label="Sensor"><option value="">All sensors</option><option>http</option><option>ssh</option><option>telnet</option><option>raw</option></select>
+      </div>
+      <table class="log"><thead><tr><th scope="col">Time</th><th scope="col">Sensor</th><th scope="col">Source</th><th scope="col">What happened</th><th scope="col">Behaviour</th></tr></thead><tbody id="log"></tbody></table>
+    </section>
+
+    <section class="page" id="page-sources" aria-labelledby="h-sources" hidden>
+      <header class="lede"><h1 id="h-sources">Who came knocking</h1><p class="sub">Every address that reached a sensor, most concerning first.</p></header>
+      <table class="log"><thead><tr><th scope="col">Source</th><th scope="col">Events</th><th scope="col">Logins</th><th scope="col">Sensors</th><th scope="col">Active</th><th scope="col">Behaviour</th></tr></thead><tbody id="sources"></tbody></table>
+    </section>
+
+    <section class="page" id="page-source" aria-labelledby="h-source" hidden>
+      <a class="back" href="#/sources">All sources</a>
+      <header class="lede"><h1 id="h-source"></h1><p class="sub" id="source-sub"></p></header>
+      <section class="card"><h2>Activity across the day</h2><svg id="strip" role="img"></svg></section>
+      <div class="pair">
+        <section class="card"><h2>Behaviour</h2><ul id="source-tags" class="chips"></ul></section>
+        <section class="card"><h2>Credentials tried</h2><ol id="source-pairs" class="rank"></ol></section>
+      </div>
+      <section class="card"><h2>Every event</h2><table class="log inner"><tbody id="source-events"></tbody></table></section>
+    </section>
+
+    <section class="page" id="page-credentials" aria-labelledby="h-credentials" hidden>
+      <header class="lede"><h1 id="h-credentials">What they typed</h1><p class="sub">Usernames and passwords submitted to the telnet prompt and the web login form.</p></header>
+      <div class="trio">
+        <section class="card"><h2>Pairs</h2><ol id="pairs" class="rank bars"></ol></section>
+        <section class="card"><h2>Usernames</h2><ol id="users" class="rank bars"></ol></section>
+        <section class="card"><h2>Passwords</h2><ol id="passwords" class="rank bars"></ol></section>
+      </div>
+    </section>
+
+    <section class="page" id="page-paths" aria-labelledby="h-paths" hidden>
+      <header class="lede"><h1 id="h-paths">What they asked for</h1><p class="sub">Paths requested from the web decoy, and the software clients announced.</p></header>
+      <div class="pair">
+        <section class="card"><h2>Paths</h2><ol id="paths" class="rank bars mono"></ol></section>
+        <section class="card"><h2>Clients</h2><ol id="clients" class="rank bars mono"></ol></section>
+      </div>
+    </section>
+
+    <section class="page" id="page-behaviours" aria-labelledby="h-behaviours" hidden>
+      <header class="lede"><h1 id="h-behaviours">Behaviours Lure recognises</h1><p class="sub">Each event is checked against these rules. The count shows how often each one matched today.</p></header>
+      <div id="rules" class="rules"></div>
+    </section>
+
+    <section class="page" id="page-sensors" aria-labelledby="h-sensors" hidden>
+      <header class="lede"><h1 id="h-sensors">The decoys</h1><p class="sub">Each sensor answers just enough of its protocol to see what a client wants, records it, and hangs up. Nothing a client sends is ever run.</p></header>
+      <div id="doors" class="doors"></div>
+    </section>
+
+    <section class="page" id="page-about" aria-labelledby="h-about" hidden>
+      <header class="lede"><h1 id="h-about">About Lure</h1></header>
+      <div class="card prose">
+        <p>Lure runs services that nobody should use: a web login page, an SSH banner, a telnet prompt and ports dressed as other software. Because no legitimate client has a reason to connect, everything they record is a probe, a scan or an automated login attempt.</p>
+        <p>Each sensor reads a bounded amount of input, never runs any of it, and closes the connection. Events are tagged by the behaviour they show, kept in memory, and optionally written to a JSON Lines journal.</p>
+        <p>Run Lure on an address you control, and keep the panel on a private address or behind a token.</p>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
