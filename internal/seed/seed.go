@@ -19,7 +19,6 @@ type actor struct {
 	kind    event.Kind
 	weight  int
 	fields  func(r *rand.Rand) map[string]string
-	summary func(f map[string]string) string
 }
 
 var configPaths = []string{"/.env", "/.git/config", "/config.json", "/.aws/credentials", "/backup.zip", "/wp-config.php.bak"}

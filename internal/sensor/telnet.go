@@ -64,13 +64,13 @@ func readTelnetLine(r *bufio.Reader) (string, error) {
 			}
 			return "", err
 		}
-		switch {
-		case b == 0xFF: // IAC: skip the command and its option byte
+		switch b {
+		case 0xFF: // IAC: skip the command and its option byte
 			_, _ = r.ReadByte()
 			_, _ = r.ReadByte()
-		case b == '\n':
+		case '\n':
 			return strings.TrimSpace(sb.String()), nil
-		case b == 0 || b == '\r':
+		case 0, '\r':
 		default:
 			if sb.Len() < 256 {
 				sb.WriteByte(b)
